@@ -11,13 +11,35 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        // Prevent form from refreshing the page
+        if (e) e.preventDefault();
+        
+        if (loading) return;
+
+        console.log("Login attempt started..."); 
         setLoading(true);
+
         try {
-            await login(email, password);
-            navigate('/dashboard');
+            const success = await login(email, password);
+            
+            if (success) {
+                console.log("Login successful! Redirecting...");
+                
+                /**
+                 * If navigate('/dashboard') isn't working, use this hard redirect.
+                 * It forces the browser to reload the app with the new token
+                 * stored in LocalStorage.
+                 */
+                window.location.href = '/dashboard'; 
+            }
         } catch (error) {
-            alert(error.response?.data?.message || "Invalid credentials. Please try again.");
+            console.error("Login component error:", error);
+        
+            const errorMessage = error.response?.data?.message || 
+                               error.response?.data?.error || 
+                               "Invalid credentials or server is offline.";
+            
+            alert(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -31,30 +53,40 @@ const Login = () => {
                     <p>Enter your account details</p>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <div className="input-group">
-                        <label>Email</label>
+                        <label htmlFor="email">Email</label>
                         <input 
+                            id="email"
                             type="email" 
                             placeholder="admin@gmail.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            autoComplete="email"
                             required
+                            disabled={loading}
                         />
                     </div>
 
                     <div className="input-group">
-                        <label>Password</label>
+                        <label htmlFor="password">Password</label>
                         <input 
+                            id="password"
                             type="password" 
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            autoComplete="current-password"
                             required
+                            disabled={loading}
                         />
                     </div>
 
-                    <button type="submit" className="login-btn" disabled={loading}>
+                    <button 
+                        type="submit" 
+                        className="login-btn" 
+                        disabled={loading}
+                    >
                         {loading ? "Authenticating..." : "Login"}
                     </button>
                 </form>

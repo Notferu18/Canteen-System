@@ -1,0 +1,47 @@
+/* src/components/POSStyles.module.css */
+.posRoot {
+    display: flex;
+    height: 100vh;
+    background-color: #f8fafc !important; /* Force light gray */
+    color: #1e293b !important;
+    font-family: sans-serif;
+}
+
+.productSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: #f8fafc;
+}
+
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.productCard {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.productCard:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #2563eb;
+    margin-top: 0.5rem;
+}

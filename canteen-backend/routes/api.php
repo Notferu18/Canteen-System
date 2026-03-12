@@ -11,17 +11,21 @@ use App\Http\Controllers\ReportController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
+/* PUBLIC ROUTES */
+Route::get('/menu-items', [MenuController::class, 'index']);
+Route::get('/categories', [CategoryController::class, 'index']);
+
+/* PROTECTED ROUTES */
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
 
-    Route::get('/menu-items', [MenuController::class, 'index']);
     Route::post('/menu-items', [MenuController::class, 'store']);
     Route::get('/menu-items/{id}', [MenuController::class, 'show']);
     Route::put('/menu-items/{id}', [MenuController::class, 'update']); 
