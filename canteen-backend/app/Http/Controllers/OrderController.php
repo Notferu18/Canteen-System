@@ -10,35 +10,53 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'items' => 'required|array',
-            'items.*.id' => 'required|exists:menu_items,id',
-            'items.*.qty' => 'required|integer|min:1',
-            'total' => 'required|numeric',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'items'        => 'required|array',
+        'items.*.id'  => 'required|exists:menu_items,id',
+        'items.*.qty' => 'required|integer|min:1',
+    ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $order = Order::create([
-                'user_id' => $request->user()->id,
-                'total_amount' => $validated['total'],
-                'status' => 'completed',
-            ]);
+    return DB::transaction(function () use ($validated, $request) {
+        $ids       = collect($validated['items'])->pluck('id');
+        $menuItems = MenuItem::whereIn('id', $ids)->lockForUpdate()->get()->keyBy('id');
 
-            foreach ($validated['items'] as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'menu_item_id' => $item['id'],
-                    'quantity' => $item['qty'],
-                    'price' => $item['price'], 
-                ]);
+        $calculatedTotal = 0;
 
-                $menuItem = MenuItem::find($item['id']);
-                $menuItem->decrement('stock', $item['qty']);
+        foreach ($validated['items'] as $item) {
+            $menuItem = $menuItems->get($item['id']);
+
+            if ($menuItem->stock < $item['qty']) {
+                abort(422, "Insufficient stock for: {$menuItem->name}");
             }
 
-            return response()->json(['message' => 'Order processed successfully', 'order' => $order], 201);
-        });
-    }
+            $calculatedTotal += $menuItem->price * $item['qty'];
+        }
+
+        $order = Order::create([
+            'user_id'      => $request->user()->id,
+            'total_amount' => $calculatedTotal, 
+            'status'       => 'pending',
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $menuItem = $menuItems->get($item['id']);
+
+            OrderItem::create([
+                'order_id'     => $order->id,
+                'menu_item_id' => $item['id'],
+                'quantity'     => $item['qty'],
+                'price'        => $menuItem->price, 
+            ]);
+
+            $menuItem->decrement('stock', $item['qty']);
+        }
+
+        return response()->json([
+            'message' => 'Order placed successfully',
+            'order'   => $order,
+        ], 201);
+    });
+}
 }

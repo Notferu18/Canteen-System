@@ -1,47 +1,125 @@
-/* src/components/POSStyles.module.css */
 .posRoot {
     display: flex;
     height: 100vh;
-    background-color: #f8fafc !important; /* Force light gray */
-    color: #1e293b !important;
-    font-family: sans-serif;
+    width: 100vw;
+    background-color: #000000 !important;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 .productSection {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    background-color: #f8fafc;
+    background-color: #050505;
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.posHeader {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .productGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    padding: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
     overflow-y: auto;
+    padding-bottom: 2rem;
 }
 
 .productCard {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1rem;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .productCard:hover {
-    border-color: #3b82f6;
+    border-color: #FF2D20;
+    background: #141414;
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.price {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #2563eb;
+.priceText {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #FF2D20;
     margin-top: 0.5rem;
+}
+
+/* SIDEBAR - SLIM & SPACED */
+.manifestSidebar {
+    width: 360px; 
+    background-color: #080808;
+    border-left: 1px solid #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+}
+
+.cartList {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.manifestItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem;
+    background-color: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    gap: 1rem;
+}
+
+/* CHECKOUT SECTION */
+.summarySection {
+    margin-top: auto;
+    padding-top: 2rem;
+    border-top: 1px solid #1a1a1a;
+    background-color: #080808;
+}
+
+.btnCommit {
+    width: 100%;
+    margin-top: 2.5rem; /* Margin for spacing */
+    background-color: #FF2D20;
+    color: white;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 1.4rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btnCommit:hover:not(:disabled) {
+    background-color: #e0281c;
+    box-shadow: 0 0 20px rgba(255, 45, 32, 0.3);
+}
+
+.btnCommit:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
 }

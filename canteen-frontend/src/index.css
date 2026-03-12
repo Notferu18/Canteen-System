@@ -1,39 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-@layer components {
-    .noir-layout {
-        @apply flex h-screen bg-[#050505] text-zinc-100 font-mono selection:bg-red-600;
-    }
-    
-    .noir-sidebar {
-        @apply w-[400px] bg-[#080808] flex flex-col border-l border-zinc-900 shadow-2xl;
-    }
-
-    .noir-item-card {
-        @apply bg-zinc-950 border border-zinc-900 p-4 rounded-none transition-all duration-300 flex flex-col text-left;
-    }
-    
-    .noir-item-card-active {
-        @apply hover:border-red-600 hover:shadow-[0_0_15px_rgba(220,38,38,0.1)] cursor-pointer;
-    }
-    
-    .noir-item-card-disabled {
-        @apply opacity-30 cursor-not-allowed grayscale;
-    }
-
-    .noir-terminal-header {
-        @apply p-6 border-b border-zinc-900 flex justify-between items-center bg-[#080808];
-    }
-
-    .noir-text-glitch {
-        @apply font-black uppercase tracking-[0.3em] text-zinc-200;
-    }
-
-    .noir-btn-commit {
-        @apply w-full bg-red-600 py-5 text-xs font-black uppercase tracking-[0.5em] text-white 
-               hover:bg-red-700 active:scale-[0.98] transition-all duration-200
-               disabled:bg-zinc-900 disabled:text-zinc-700 disabled:border-zinc-800 border-t border-red-500;
-    }
+body, html, #root {
+    background-color: #000 !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
