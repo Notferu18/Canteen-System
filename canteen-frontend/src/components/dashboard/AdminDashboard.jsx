@@ -1,84 +1,176 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { DollarSign, ShoppingCart, AlertTriangle, TrendingUp } from 'lucide-react';
+import SalesChart from './SalesChart';
+import CategoryPieChart from './CategoryPieChart';
+import OrderTrendChart from './OrderTrendChart';
 
 const AdminDashboard = () => {
     const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            const token = localStorage.getItem('token');
-            const res = await axios.get('http://127.0.0.1:8000/api/reports/dashboard', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setData(res.data);
+            try {
+                const token = localStorage.getItem('token');
+                const res = await axios.get('http://127.0.0.1:8000/api/reports/dashboard', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setData(res.data);
+            } catch (err) {
+                setError('Failed to load dashboard data.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchData();
     }, []);
 
-    if (!data) return <div className="p-10 text-white">INITIALIZING ANALYTICS...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-screen bg-black">
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-zinc-500 text-xs uppercase tracking-widest font-bold">Initializing Analytics...</p>
+            </div>
+        </div>
+    );
 
-    const COLORS = ['#dc2626', '#7f1d1d', '#450a0a'];
+    if (error) return (
+        <div className="flex items-center justify-center min-h-screen bg-black">
+            <p className="text-red-500 text-sm">{error}</p>
+        </div>
+    );
+
+    const summaryCards = [
+        {
+            label: 'Total Revenue',
+            value: `₱${Number(data.totalRevenue).toLocaleString()}`,
+            icon: <DollarSign size={18} />,
+            accent: 'border-red-600',
+            iconBg: 'bg-red-600/10 text-red-500',
+            change: '+12.5%',
+            danger: false,
+        },
+        {
+            label: 'Total Orders',
+            value: data.totalOrders,
+            icon: <ShoppingCart size={18} />,
+            accent: 'border-zinc-600',
+            iconBg: 'bg-zinc-800 text-zinc-400',
+            change: '+8.2%',
+            danger: false,
+        },
+        {
+            label: 'Avg Order Value',
+            value: `₱${data.totalOrders ? (data.totalRevenue / data.totalOrders).toFixed(2) : '0.00'}`,
+            icon: <TrendingUp size={18} />,
+            accent: 'border-blue-700',
+            iconBg: 'bg-blue-900/20 text-blue-400',
+            change: '+3.1%',
+            danger: false,
+        },
+        {
+            label: 'Low Stock Alerts',
+            value: data.lowStockCount,
+            icon: <AlertTriangle size={18} />,
+            accent: 'border-amber-600',
+            iconBg: 'bg-amber-900/20 text-amber-500',
+            change: data.lowStockCount > 0 ? 'Needs attention' : 'All clear',
+            danger: data.lowStockCount > 0,
+        },
+    ];
 
     return (
-        <div className="p-8 bg-black min-h-screen text-white">
-            <h1 className="text-2xl font-black uppercase tracking-[0.3em] mb-8 border-b border-red-600 pb-2">
-                Executive_Summary
-            </h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-zinc-900 p-6 border-l-4 border-red-600">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase">Total Revenue</p>
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-3xl font-black">₱{data.totalRevenue}</h2>
-                        <DollarSign className="text-zinc-700" />
-                    </div>
+        <div className="min-h-screen bg-black text-white">
+            <div className="border-b border-zinc-900 px-8 py-4 flex items-center justify-between sticky top-0 bg-black/95 backdrop-blur-sm z-10">
+                <div>
+                    <h1 className="text-lg font-black uppercase tracking-[0.25em] text-white">
+                        Admin <span className="text-red-600">Dashboard</span>
+                    </h1>
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-0.5">
+                        {new Date().toLocaleDateString('en-US', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        })}
+                    </p>
                 </div>
-                <div className="bg-zinc-900 p-6 border-l-4 border-zinc-700">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase">Total Orders</p>
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-3xl font-black">{data.totalOrders}</h2>
-                        <ShoppingCart className="text-zinc-700" />
-                    </div>
-                </div>
-                <div className="bg-zinc-900 p-6 border-l-4 border-amber-600">
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase">Low Stock Alerts</p>
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-3xl font-black text-amber-500">{data.lowStockCount}</h2>
-                        <AlertTriangle className="text-amber-900" />
-                    </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Live</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-zinc-900 p-6 border border-zinc-800">
-                    <h3 className="text-xs font-bold uppercase mb-6 text-zinc-400">Daily Revenue Flow</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data.salesData}>
-                                <XAxis dataKey="day" stroke="#52525b" fontSize={12} />
-                                <YAxis stroke="#52525b" fontSize={12} />
-                                <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none' }} />
-                                <Bar dataKey="amount" fill="#dc2626" />
-                            </BarChart>
-                        </ResponsiveContainer>
+            <div className="p-8 space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {summaryCards.map((card, i) => (
+                        <div
+                            key={i}
+                            className={`bg-zinc-950 border border-zinc-900 border-l-2 ${card.accent} rounded-sm p-5 flex flex-col gap-3`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                    {card.label}
+                                </p>
+                                <div className={`p-2 rounded-sm ${card.iconBg}`}>
+                                    {card.icon}
+                                </div>
+                            </div>
+                            <p className={`text-3xl font-black tracking-tight ${card.danger ? 'text-amber-400' : 'text-white'}`}>
+                                {card.value}
+                            </p>
+                            <p className={`text-[10px] font-bold uppercase tracking-wider ${card.danger ? 'text-amber-600' : 'text-zinc-600'}`}>
+                                {card.change}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <SalesChart data={data.salesData || []} />
+                    </div>
+                    <div>
+                        <CategoryPieChart data={data.categoryData || []} />
                     </div>
                 </div>
 
-                <div className="bg-zinc-900 p-6 border border-zinc-800">
-                    <h3 className="text-xs font-bold uppercase mb-6 text-zinc-400">Category Distribution</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={data.categoryData} innerRadius={60} outerRadius={80} dataKey="value">
-                                    {data.categoryData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <OrderTrendChart data={data.orderTrends || data.salesData || []} />
+
+                    <div className="bg-zinc-950 border border-zinc-900 rounded-sm p-6">
+                        <div className="mb-6">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-white">Best Sellers</h3>
+                            <p className="text-[10px] text-zinc-600 mt-0.5">Top items by revenue</p>
+                        </div>
+                        <div className="space-y-3">
+                            {(data.bestSellers || []).slice(0, 5).map((item, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <span className="text-[10px] font-black text-zinc-700 w-4">{i + 1}</span>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wide">
+                                                {item.name}
+                                            </span>
+                                            <span className="text-[10px] font-black text-red-500">
+                                                ₱{Number(item.revenue).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-red-600 rounded-full"
+                                                style={{
+                                                    width: `${(item.revenue / (data.bestSellers[0]?.revenue || 1)) * 100}%`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {(!data.bestSellers || data.bestSellers.length === 0) && (
+                                <p className="text-zinc-700 text-xs text-center py-4">No data available</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
