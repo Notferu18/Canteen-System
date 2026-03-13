@@ -11,35 +11,30 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
-        // Prevent form from refreshing the page
         if (e) e.preventDefault();
-        
-        if (loading) return;
-
-        console.log("Login attempt started..."); 
         setLoading(true);
 
         try {
-            const success = await login(email, password);
+            const userData = await login(email, password); 
+
+            console.log("Full userData:", JSON.stringify(userData)); 
             
-            if (success) {
-                console.log("Login successful! Redirecting...");
-                
-                /**
-                 * If navigate('/dashboard') isn't working, use this hard redirect.
-                 * It forces the browser to reload the app with the new token
-                 * stored in LocalStorage.
-                 */
-                window.location.href = '/dashboard'; 
+            if (userData) {
+                console.log("Login successful! Role is:", userData.role);
+            
+                const userRole = userData.role ? userData.role.toLowerCase() : '';
+
+                if (userRole === 'admin') {
+                    navigate('/dashboard');
+                } else if (userRole === 'cashier') {
+                    navigate('/pos');
+                } else {
+                    navigate('/menu');
+}
             }
         } catch (error) {
-            console.error("Login component error:", error);
-        
-            const errorMessage = error.response?.data?.message || 
-                               error.response?.data?.error || 
-                               "Invalid credentials or server is offline.";
-            
-            alert(errorMessage);
+            console.error("Login failed:", error);
+            alert("Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }

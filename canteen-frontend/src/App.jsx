@@ -40,8 +40,8 @@ const AppLayout = ({ children }) => {
 function AppRoutes() {
   const { user } = useAuth();
 
-  const isAdmin = () => {
-    return user?.role?.toUpperCase() === 'ADMIN';
+const isAdmin = () => {
+    return user?.role?.toLowerCase() === 'admin';
   };
 
   return (
