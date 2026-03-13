@@ -35,7 +35,7 @@ const InventoryTable = () => {
         }
     };
 
-    const lowStockItems = items.filter(item => item.stock < 10);
+    const lowStockItems = items.filter(item => item.stock < 20);
 
     return (
         <div className="p-8 bg-black min-h-screen text-white">
@@ -81,7 +81,7 @@ const InventoryTable = () => {
                                     {item.stock}
                                 </td>
                                 <td className="p-4">
-                                    {item.stock < 10 ? (
+                                    {item.stock < 20 ? (
                                         <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 font-black uppercase">Low</span>
                                     ) : (
                                         <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 font-black uppercase">Stable</span>

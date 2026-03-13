@@ -2,7 +2,7 @@ import React from 'react';
 
 const MenuItemCard = ({ item, onEdit, onDelete }) => {
     const stockPercent = Math.min((item.stock / 100) * 100, 100);
-    const isLow = item.stock < 10;
+    const isLow = item.stock < 20;
 
     return (
         <div className="relative overflow-hidden border border-zinc-800 bg-zinc-950 p-5 rounded-sm hover:border-zinc-600 transition-all group">

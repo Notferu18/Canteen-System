@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const LowStockAlert = ({ items = [], onDismiss, threshold = 10 }) => {
+const LowStockAlert = ({ items = [], onDismiss, threshold = 20 }) => {
     const navigate = useNavigate();
     const lowItems = items.filter(item => item.stock < threshold);
 

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { UserPlus, Trash2, RefreshCw, ShieldCheck, User, Users } from 'lucide-react';
+import { UserPlus, Trash2, RefreshCw, ShieldCheck, User, Users, Pencil, X } from 'lucide-react';
+
+const EMPTY_FORM = { name: '', email: '', password: '', password_confirmation: '', role: 'cashier' };
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', role: 'cashier' });
+    const [editingUser, setEditingUser] = useState(null); 
+    const [form, setForm] = useState(EMPTY_FORM);
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -30,6 +33,33 @@ const UserManagement = () => {
         }
     };
 
+    const openCreateModal = () => {
+        setEditingUser(null);
+        setForm(EMPTY_FORM);
+        setErrors({});
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (user) => {
+        setEditingUser(user);
+        setForm({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            password: '',
+            password_confirmation: '',
+        });
+        setErrors({});
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingUser(null);
+        setForm(EMPTY_FORM);
+        setErrors({});
+    };
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
         setErrors({ ...errors, [e.target.name]: '' });
@@ -39,17 +69,23 @@ const UserManagement = () => {
         e.preventDefault();
         setSubmitting(true);
         setErrors({});
+
         try {
-            await axios.post('http://127.0.0.1:8000/api/register', form, {
-                headers: { Authorization: `Bearer ${getToken()}` }
-            });
-            setIsModalOpen(false);
-            setForm({ name: '', email: '', password: '', password_confirmation: '', role: 'cashier' });
+            if (editingUser) {
+                await axios.put(`http://127.0.0.1:8000/api/users/${editingUser.id}`, form, {
+                    headers: { Authorization: `Bearer ${getToken()}` }
+                });
+            } else {
+                await axios.post('http://127.0.0.1:8000/api/register', form, {
+                    headers: { Authorization: `Bearer ${getToken()}` }
+                });
+            }
+            closeModal();
             fetchUsers();
         } catch (err) {
             const serverErrors = err.response?.data?.errors;
             if (serverErrors) setErrors(serverErrors);
-            else setErrors({ general: 'Failed to create user.' });
+            else setErrors({ general: err.response?.data?.message || 'Operation failed.' });
         } finally {
             setSubmitting(false);
         }
@@ -63,7 +99,7 @@ const UserManagement = () => {
             });
             setUsers(users.filter(u => u.id !== id));
         } catch (err) {
-            alert('Failed to delete user.');
+            alert(err.response?.data?.message || 'Failed to delete user.');
         }
     };
 
@@ -104,7 +140,7 @@ const UserManagement = () => {
                         <RefreshCw size={16} />
                     </button>
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={openCreateModal}
                         className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-sm text-xs font-black uppercase tracking-widest transition"
                     >
                         <UserPlus size={14} />
@@ -135,7 +171,7 @@ const UserManagement = () => {
                             <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Email</th>
                             <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Role</th>
                             <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Joined</th>
-                            <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Action</th>
+                            <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -166,14 +202,22 @@ const UserManagement = () => {
                                         {new Date(user.created_at).toLocaleDateString()}
                                     </td>
                                     <td className="p-4 text-right">
-                                        {user.role !== 'admin' && (
+                                        <div className="flex items-center justify-end gap-1">                 
                                             <button
-                                                onClick={() => handleDelete(user.id)}
-                                                className="text-zinc-700 hover:text-red-500 transition p-1.5 hover:bg-red-900/10 rounded-sm"
+                                                onClick={() => openEditModal(user)}
+                                                className="text-zinc-600 hover:text-white transition p-1.5 hover:bg-zinc-800 rounded-sm"
                                             >
-                                                <Trash2 size={14} />
+                                                <Pencil size={14} />
                                             </button>
-                                        )}
+                                            {user.role !== 'admin' && (
+                                                <button
+                                                    onClick={() => handleDelete(user.id)}
+                                                    className="text-zinc-700 hover:text-red-500 transition p-1.5 hover:bg-red-900/10 rounded-sm"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -185,9 +229,14 @@ const UserManagement = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
                     <div className="bg-zinc-950 border border-zinc-800 rounded-sm p-8 w-full max-w-md">
-                        <h2 className="text-sm font-black uppercase tracking-widest text-white mb-6">
-                            Create New User
-                        </h2>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-sm font-black uppercase tracking-widest text-white">
+                                {editingUser ? 'Edit User' : 'Create New User'}
+                            </h2>
+                            <button onClick={closeModal} className="text-zinc-600 hover:text-white transition">
+                                <X size={16} />
+                            </button>
+                        </div>
 
                         {errors.general && (
                             <div className="bg-red-900/20 border border-red-800/40 text-red-400 text-xs px-4 py-3 rounded-sm mb-4 uppercase tracking-wide">
@@ -224,11 +273,14 @@ const UserManagement = () => {
                                 >
                                     <option value="cashier">Cashier</option>
                                     <option value="customer">Customer</option>
+                                    {editingUser && <option value="admin">Admin</option>}
                                 </select>
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-1.5">Password</label>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-1.5">
+                                    Password {editingUser && <span className="text-zinc-700 normal-case">(leave blank to keep current)</span>}
+                                </label>
                                 <input
                                     type="password" name="password" placeholder="••••••••"
                                     value={form.password} onChange={handleChange}
@@ -252,10 +304,10 @@ const UserManagement = () => {
                                     type="submit" disabled={submitting}
                                     className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 py-2.5 font-black text-xs uppercase tracking-widest transition rounded-sm"
                                 >
-                                    {submitting ? 'Creating...' : 'Create User'}
+                                    {submitting ? 'Saving...' : editingUser ? 'Save Changes' : 'Create User'}
                                 </button>
                                 <button
-                                    type="button" onClick={() => { setIsModalOpen(false); setErrors({}); }}
+                                    type="button" onClick={closeModal}
                                     className="flex-1 border border-zinc-700 py-2.5 hover:bg-zinc-900 transition text-xs uppercase font-black tracking-widest text-zinc-400 rounded-sm"
                                 >
                                     Cancel
