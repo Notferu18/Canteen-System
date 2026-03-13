@@ -19,6 +19,9 @@ Route::post('/orders', [OrderController::class, 'store']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::get('/users', [UserController::class, 'index']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
     Route::get('/user', fn(Request $request) => $request->user());
     Route::post('/logout', [AuthController::class, 'logout']);
 
