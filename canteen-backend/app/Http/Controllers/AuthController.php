@@ -23,22 +23,18 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+        
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // return response()->json([
-        //     'user' => [
-        //         'id' => $user->id,
-        //         'name' => $user->name,
-        //         'email' => $user->email,
-        //         'role' => $user->role, 
-        //     ],
-        //     'token' => $token
-        // ]);
-
         return response()->json([
-        'message' => 'I AM ALIVE',
-        'you_sent' => $request->all()
-    ], 200);
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role, 
+            ],
+            'token' => $token
+        ], 200);
     }
 
     public function logout(Request $request)

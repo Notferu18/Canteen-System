@@ -15,6 +15,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/menu-items', [MenuController::class, 'index']);
 Route::get('/menu-items/{id}', [MenuController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::post('/orders', [OrderController::class, 'store']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -22,7 +23,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 

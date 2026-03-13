@@ -14,6 +14,9 @@ public function up(): void
     Schema::create('orders', function (Blueprint $table) {
         $table->id();
         $table->string('order_number')->unique();
+        
+        $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+        
         $table->decimal('total_amount', 10, 2);
         $table->enum('status', ['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'])->default('Pending');
         $table->timestamps();
