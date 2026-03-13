@@ -53,7 +53,7 @@ const InventoryTable = () => {
 
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-3xl font-black uppercase tracking-widest text-white">Inventory_Log</h1>
+                    <h1 className="text-3xl font-black uppercase tracking-widest text-white">Inventory</h1>
                     <p className="text-zinc-500 text-xs uppercase tracking-tighter">Stock Management & Supply Tracking</p>
                 </div>
                 <button onClick={fetchInventory} className="p-2 text-zinc-500 hover:text-red-500 transition">

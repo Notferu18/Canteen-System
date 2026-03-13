@@ -83,7 +83,7 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white p-8">
             <div className="border-b border-zinc-900 px-8 py-4 flex items-center justify-between sticky top-0 bg-black/95 backdrop-blur-sm z-10">
                 <div>
                     <h1 className="text-lg font-black uppercase tracking-[0.25em] text-white">

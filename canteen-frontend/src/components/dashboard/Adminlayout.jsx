@@ -2,13 +2,6 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
-/**
- * AdminLayout — wraps all admin/cashier pages
- * Usage:
- *   <AdminLayout>
- *     <YourPageComponent />
- *   </AdminLayout>
- */
 const AdminLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
 

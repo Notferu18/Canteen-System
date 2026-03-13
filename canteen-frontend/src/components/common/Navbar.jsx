@@ -19,7 +19,7 @@ const Navbar = ({ sidebarCollapsed = false }) => {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const current = routeTitles[location.pathname] || { title: 'Canteen OS', sub: '' };
+    const current = routeTitles[location.pathname] || { title: 'Canteen INV', sub: '' };
 
     return (
         <header

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, ClipboardList,
     LogOut, History, UserCircle, Clock, ShoppingCart,
-    ChevronLeft, ChevronRight
+    ChevronLeft, ChevronRight, Users
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -25,7 +25,7 @@ const Sidebar = () => {
         { name: 'Menu View',        path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
         { name: 'Order Queue',      path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
         { name: 'Inventory',        path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Audit Trail',      path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
+        { name: 'Reports',      path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
         { name: 'User Management',  path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
     ];
 
@@ -46,7 +46,7 @@ const Sidebar = () => {
                 {!collapsed && (
                     <div>
                         <h2 className="text-red-600 font-black text-base tracking-tighter uppercase italic leading-none">
-                            Canteen<span className="text-white">OS</span>
+                            Canteen<span className="text-white"> INV </span>
                         </h2>
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -125,7 +125,7 @@ const Sidebar = () => {
                 >
                     <LogOut size={16} className="flex-shrink-0 group-hover:-translate-x-0.5 transition-transform" />
                     {!collapsed && (
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Terminate Session</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Logout</span>
                     )}
                 </button>
             </div>

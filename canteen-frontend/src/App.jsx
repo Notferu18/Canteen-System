@@ -12,7 +12,7 @@ import InventoryTable from './components/inventory/InventoryTable';
 import AdminDashboard from './components/dashboard/AdminDashboard';
 import OrderQueue from './components/orders/OrderQueue';
 import Register from './components/auth/Register';
-import UserManagement from './components/auth/UserManagement';
+import UserManagement from './components/auth/UserManagement.jsx';
 
 const AppLayout = ({ children }) => {
   const location = useLocation();
@@ -34,9 +34,9 @@ const AppLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-black text-white">
       {!isLoginPage && user && <Sidebar />}
-      <div className={`flex-1 min-w-0 ${!isLoginPage && user ? 'ml-64' : ''}`}>
-        {children}
-      </div>
+  <div className={`flex-1 min-w-0 h-screen overflow-y-auto ${!isLoginPage && user ? 'ml-64' : ''}`}>
+    {children}
+  </div>
     </div>
   );
 };

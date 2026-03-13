@@ -1,20 +1,6 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
-/**
- * ErrorBoundary — catches any JS errors in child components
- * and shows a fallback UI instead of crashing the whole app.
- *
- * Usage:
- *   <ErrorBoundary>
- *     <YourComponent />
- *   </ErrorBoundary>
- *
- *   Or with a custom fallback:
- *   <ErrorBoundary fallback={<p>Something went wrong.</p>}>
- *     <YourComponent />
- *   </ErrorBoundary>
- */
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
