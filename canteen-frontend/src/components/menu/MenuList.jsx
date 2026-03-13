@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import MenuForm from './MenuForm';
+import MenuItemCard from './MenuItemCard';
 
 const MenuList = () => {
     const [menuItems, setMenuItems] = useState([]);
-    const [categories, setCategories] = useState([]); 
-    const [activeCategory, setActiveCategory] = useState('all'); 
-    const [searchTerm, setSearchTerm] = useState(''); 
+    const [categories, setCategories] = useState([]);
+    const [activeCategory, setActiveCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
-    const [newItem, setNewItem] = useState({ name: '', price: '', stock: '', category_id: 1 });
+    const [newItem, setNewItem] = useState({ name: '', price: '', stock: '', category_id: '' });
 
     const API_URL = 'http://127.0.0.1:8000/api/menu-items';
     const CAT_URL = 'http://127.0.0.1:8000/api/categories';
@@ -20,10 +22,14 @@ const MenuList = () => {
 
     const fetchMenu = async () => {
         const token = localStorage.getItem('token');
-        const res = await axios.get(API_URL, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setMenuItems(res.data);
+        try {
+            const res = await axios.get(API_URL, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setMenuItems(res.data);
+        } catch (err) {
+            console.error("Failed to fetch menu", err);
+        }
     };
 
     const fetchCategories = async () => {
@@ -58,7 +64,7 @@ const MenuList = () => {
                 });
             }
             closeModal();
-            fetchMenu(); 
+            fetchMenu();
         } catch (err) {
             console.error("Operation failed", err);
         }
@@ -87,155 +93,87 @@ const MenuList = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setEditingId(null);
-        setNewItem({ name: '', price: '', stock: '', category_id: 1 });
+        setNewItem({ name: '', price: '', stock: '', category_id: '' });
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6">
-            <div className="flex flex-col md:flex-row justify-between items-center border-b border-red-600 pb-4 mb-8 gap-4">
-                <h1 className="text-3xl font-bold tracking-widest text-red-600 uppercase">Inventory</h1>
-                
-                <div className="flex w-full md:w-auto gap-4">
-                    <input 
-                        type="text" 
-                        placeholder="SEARCH PRODUCTS..." 
-                        className="bg-zinc-900 border border-zinc-700 px-4 py-2 outline-none focus:border-red-600 w-full md:w-64 text-sm uppercase tracking-tighter"
+        <div className="min-h-screen bg-black text-white p-6 flex flex-col">
+
+            <div className="flex flex-col md:flex-row justify-between items-center border-b border-zinc-800 pb-4 mb-6 gap-4">
+                <h1 className="text-2xl font-black tracking-widest text-white uppercase">
+                    Menu <span className="text-red-600">Items</span>
+                </h1>
+                <div className="flex w-full md:w-auto gap-3">
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        className="bg-zinc-950 border border-zinc-800 px-4 py-2 outline-none focus:border-red-600 w-full md:w-64 text-sm text-white placeholder-zinc-600 rounded-sm transition-colors"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <button 
+                    <button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-sm font-bold transition whitespace-nowrap"
+                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-sm font-bold text-xs uppercase tracking-widest transition whitespace-nowrap"
                     >
-                        + NEW ITEM
+                        + New Item
                     </button>
                 </div>
             </div>
 
-            <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 flex-shrink-0">
                 <button
                     onClick={() => setActiveCategory('all')}
-                    className={`px-4 py-1 text-[10px] font-bold tracking-widest border transition-all ${
-                        activeCategory === 'all' ? 'bg-red-600 border-red-600 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
+                    className={`px-4 py-1.5 text-[10px] font-bold tracking-widest border rounded-sm transition-all whitespace-nowrap ${
+                        activeCategory === 'all'
+                            ? 'bg-red-600 border-red-600 text-white'
+                            : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
                     }`}
                 >
-                    ALL ITEMS
+                    All Items
                 </button>
                 {categories.map((cat) => (
                     <button
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
-                        className={`px-4 py-1 text-[10px] font-bold tracking-widest border transition-all ${
-                            activeCategory === cat.id ? 'bg-red-600 border-red-600 text-white' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
+                        className={`px-4 py-1.5 text-[10px] font-bold tracking-widest border rounded-sm transition-all whitespace-nowrap ${
+                            activeCategory === cat.id
+                                ? 'bg-red-600 border-red-600 text-white'
+                                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
                         }`}
                     >
-                        {cat.name.toUpperCase()}
+                        {cat.name}
                     </button>
                 ))}
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center p-4 z-50">
-                    <div className="bg-zinc-900 border-2 border-red-600 p-8 rounded-lg w-full max-w-md shadow-[0_0_50px_rgba(220,38,38,0.2)]">
-                        <h2 className="text-red-500 text-xl font-bold mb-4 uppercase">
-                            {editingId ? 'Edit Product' : 'Add New Product'}
-                        </h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <input 
-                                type="text" placeholder="Product Name"
-                                value={newItem.name}
-                                className="w-full bg-black border border-gray-700 p-2 focus:border-red-500 outline-none"
-                                onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                                required
+            <div className="overflow-y-auto flex-1 pr-1" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
+                    {filteredItems.length > 0 ? (
+                        filteredItems.map((item) => (
+                            <MenuItemCard
+                                key={item.id}
+                                item={item}
+                                onEdit={openEditModal}
+                                onDelete={handleDelete}
                             />
-                            
-                            <select 
-                                value={newItem.category_id}
-                                className="w-full bg-black border border-gray-700 p-2 focus:border-red-500 outline-none text-zinc-400"
-                                onChange={(e) => setNewItem({...newItem, category_id: e.target.value})}
-                                required
-                            >
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
-
-                            <input 
-                                type="number" placeholder="Price (₱)"
-                                value={newItem.price}
-                                className="w-full bg-black border border-gray-700 p-2 focus:border-red-500 outline-none"
-                                onChange={(e) => setNewItem({...newItem, price: e.target.value})}
-                                required
-                            />
-                            <input 
-                                type="number" placeholder="Stock Quantity"
-                                value={newItem.stock}
-                                className="w-full bg-black border border-gray-700 p-2 focus:border-red-500 outline-none"
-                                onChange={(e) => setNewItem({...newItem, stock: e.target.value})}
-                                required
-                            />
-                            <div className="flex gap-4 mt-6">
-                                <button type="submit" className="flex-1 bg-red-600 py-2 font-bold hover:bg-red-700 transition">SAVE</button>
-                                <button 
-                                    type="button" 
-                                    onClick={closeModal}
-                                    className="flex-1 border border-gray-600 py-2 hover:bg-gray-800 transition"
-                                >
-                                    CANCEL
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        ))
+                    ) : (
+                        <p className="text-zinc-700 text-xs col-span-full text-center py-10 uppercase tracking-widest">
+                            No items found.
+                        </p>
+                    )}
                 </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredItems.length > 0 ? (
-                    filteredItems.map((item) => {
-                        const stockPercent = Math.min((item.stock / 100) * 100, 100);
-                        const isLow = item.stock < 10;
-
-                        return (
-                            <div key={item.id} className="relative overflow-hidden border border-zinc-800 bg-zinc-900 p-5 rounded hover:border-red-600 transition group">
-                                {isLow && <div className="absolute top-0 left-0 w-1 h-full bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.6)]"></div>}
-                                
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-bold group-hover:text-red-500 transition uppercase tracking-tight">{item.name}</h3>
-                                        <p className="text-red-600 font-mono text-2xl">₱{item.price}</p>
-                                        
-                                        <div className="mt-4 pr-4">
-                                            <div className="flex justify-between text-[10px] mb-1 uppercase font-bold text-zinc-500">
-                                                <span>Level</span>
-                                                <span className={isLow ? 'text-red-500 animate-pulse' : ''}>
-                                                    {item.stock} Units
-                                                </span>
-                                            </div>
-                                            <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
-                                                <div 
-                                                    className={`h-full transition-all duration-700 ease-out ${isLow ? 'bg-red-600' : 'bg-zinc-400'}`}
-                                                    style={{ width: `${stockPercent}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <button onClick={() => openEditModal(item)} className="text-[10px] border border-gray-600 px-2 py-1 hover:bg-white hover:text-black transition uppercase font-bold">
-                                            EDIT
-                                        </button>
-                                        <button onClick={() => handleDelete(item.id)} className="text-[10px] border border-red-900 text-red-500 px-2 py-1 hover:bg-red-600 hover:text-white transition uppercase font-bold">
-                                            DEL
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <p className="text-zinc-600 italic col-span-full text-center py-10">No items found matching your search.</p>
-                )}
             </div>
+
+            <MenuForm
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                onSubmit={handleSubmit}
+                categories={categories}
+                editingId={editingId}
+                newItem={newItem}
+                setNewItem={setNewItem}
+            />
         </div>
     );
 };

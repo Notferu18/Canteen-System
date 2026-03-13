@@ -1,13 +1,11 @@
 .posRoot {
     display: flex;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     background-color: #000000 !important;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    position: fixed;
-    top: 0;
-    left: 0;
+    overflow: hidden;
 }
 
 .productSection {
@@ -17,6 +15,7 @@
     background-color: #050505;
     padding: 2rem;
     overflow: hidden;
+    min-width: 0; 
 }
 
 .posHeader {
@@ -30,7 +29,7 @@
 
 .productGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1.25rem;
     overflow-y: auto;
     padding-bottom: 2rem;
@@ -54,6 +53,11 @@
     transform: translateY(-2px);
 }
 
+.disabledCard {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
 .priceText {
     font-size: 1.4rem;
     font-weight: 900;
@@ -61,14 +65,15 @@
     margin-top: 0.5rem;
 }
 
-
 .manifestSidebar {
-    width: 360px; 
+    width: 320px;
+    min-width: 320px; 
     background-color: #080808;
     border-left: 1px solid #1a1a1a;
     display: flex;
     flex-direction: column;
     padding: 1.5rem;
+    overflow: hidden;
 }
 
 .cartList {
@@ -90,7 +95,6 @@
     border-radius: 10px;
     gap: 1rem;
 }
-
 
 .summarySection {
     margin-top: auto;
@@ -116,7 +120,6 @@
 
 .btnCommit:hover:not(:disabled) {
     background-color: #e0281c;
-    box-shadow: 0 0 20px rgba(255, 45, 32, 0.3);
 }
 
 .btnCommit:disabled {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, ClipboardList,
-    LogOut, History, UserCircle, Clock, PackagePlus,
+    LogOut, History, UserCircle, Clock, ShoppingCart,
     ChevronLeft, ChevronRight
 } from 'lucide-react';
 
@@ -21,11 +21,12 @@ const Sidebar = () => {
 
     const allMenuItems = [
         { name: 'Dashboard',        path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
-        { name: 'Inventory',        path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
+        { name: 'POS Terminal',     path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
         { name: 'Menu View',        path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
         { name: 'Order Queue',      path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Inventory',        path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
         { name: 'Audit Trail',      path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
-        { name: 'Inventory Master', path: '/inventory-master', icon: <PackagePlus size={18} />,     roles: ['ADMIN'] },
+        { name: 'User Management',  path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
     ];
 
     const menuItems = allMenuItems.filter(item =>
