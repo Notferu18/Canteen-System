@@ -3,60 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'items'        => 'required|array',
-        'items.*.id'  => 'required|exists:menu_items,id',
-        'items.*.qty' => 'required|integer|min:1',
-    ]);
-
-    return DB::transaction(function () use ($validated, $request) {
-        $ids       = collect($validated['items'])->pluck('id');
-        $menuItems = MenuItem::whereIn('id', $ids)->lockForUpdate()->get()->keyBy('id');
-
-        $calculatedTotal = 0;
-
-        foreach ($validated['items'] as $item) {
-            $menuItem = $menuItems->get($item['id']);
-
-            if ($menuItem->stock < $item['qty']) {
-                abort(422, "Insufficient stock for: {$menuItem->name}");
-            }
-
-            $calculatedTotal += $menuItem->price * $item['qty'];
-        }
-
-        $order = Order::create([
-            'user_id'      => $request->user()->id,
-            'total_amount' => $calculatedTotal, 
-            'status'       => 'pending',
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.menu_item_id' => 'required|exists:menu_items,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'required|numeric',
+            'total_amount' => 'required|numeric',
         ]);
 
-        foreach ($validated['items'] as $item) {
-            $menuItem = $menuItems->get($item['id']);
+        try {
+            return DB::transaction(function () use ($validated) {
+                
+                
+                $order = Order::create([
+                    'total_amount' => $validated['total_amount'],
+                    
+                    'user_id' => auth()->id() ?? 1, 
+                ]);
 
-            OrderItem::create([
-                'order_id'     => $order->id,
-                'menu_item_id' => $item['id'],
-                'quantity'     => $item['qty'],
-                'price'        => $menuItem->price, 
-            ]);
+                foreach ($validated['items'] as $item) {
+                    
+                    $menuItem = MenuItem::lockForUpdate()->find($item['menu_item_id']);
 
-            $menuItem->decrement('stock', $item['qty']);
+                    
+                    if ($menuItem->stock < $item['quantity']) {
+                        throw new \Exception("Insufficient stock for {$menuItem->name}");
+                    }
+
+                    
+                    $menuItem->decrement('stock', $item['quantity']);
+
+                    
+                    $order->items()->attach($menuItem->id, [
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price']
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Transaction Successful!',
+                    'order_id' => $order->id
+                ], 201);
+            });
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        return response()->json([
-            'message' => 'Order placed successfully',
-            'order'   => $order,
-        ], 201);
-    });
-}
+    }
 }

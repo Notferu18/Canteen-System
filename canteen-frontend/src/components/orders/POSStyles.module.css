@@ -61,7 +61,7 @@
     margin-top: 0.5rem;
 }
 
-/* SIDEBAR - SLIM & SPACED */
+
 .manifestSidebar {
     width: 360px; 
     background-color: #080808;
@@ -91,7 +91,7 @@
     gap: 1rem;
 }
 
-/* CHECKOUT SECTION */
+
 .summarySection {
     margin-top: auto;
     padding-top: 2rem;
@@ -101,7 +101,7 @@
 
 .btnCommit {
     width: 100%;
-    margin-top: 2.5rem; /* Margin for spacing */
+    margin-top: 2.5rem;
     background-color: #FF2D20;
     color: white;
     font-weight: 900;

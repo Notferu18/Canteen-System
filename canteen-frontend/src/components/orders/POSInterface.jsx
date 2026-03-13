@@ -9,7 +9,9 @@ const POSInterface = () => {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
 
-    useEffect(() => { fetchMenu(); }, []);
+    useEffect(() => { 
+        fetchMenu(); 
+    }, []);
 
     const getToken = () => localStorage.getItem('token');
 
@@ -30,16 +32,20 @@ const POSInterface = () => {
         }
     };
 
-    const addToCart = (item) => {
-        if (item.stock <= 0) return;
-        const existing = cart.find(i => i.id === item.id);
-        if (existing) {
-            setCart(cart.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i));
-        } else {
-            setCart([...cart, { ...item, qty: 1 }]);
-        }
-    };
+ const addToCart = (item) => {
+    const existing = cart.find(i => i.id === item.id);
 
+    if (existing) {
+        setCart(cart.map(i => i.id === item.id 
+            ? { ...i, qty: i.qty + 1 } 
+            : i
+        ));
+    } else {
+        setCart([...cart, { ...item, qty: 1, price: parseFloat(item.price) }]);
+    }
+    
+    console.log(`Added ${item.name}. New total in cart:`, existing ? existing.qty + 1 : 1);
+};
     const removeFromCart = (id) => setCart(cart.filter(i => i.id !== id));
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -56,16 +62,21 @@ const POSInterface = () => {
                 })),
                 total_amount: total
             };
+
             await axios.post("http://127.0.0.1:8000/api/orders", payload, {
                 headers: { 
                     Authorization: `Bearer ${getToken()}`, 
-                    Accept: "application/json" 
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-XSRF-TOKEN": document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1]
                 }
             });
+
             alert("Order completed successfully!");
             setCart([]);
-            fetchMenu();
+            fetchMenu(); 
         } catch (err) {
+            console.error("Order error details:", err.response?.data);
             alert(err.response?.data?.message || "Order failed.");
         } finally {
             setLoading(false);
@@ -74,7 +85,6 @@ const POSInterface = () => {
 
     return (
         <div className={s.posRoot}>
-            {/* MAIN GRID */}
             <div className={s.productSection}>
                 <header className={s.posHeader}>
                     <div className="flex items-center gap-3">
@@ -90,27 +100,30 @@ const POSInterface = () => {
                 </header>
 
                 <div className={s.productGrid}>
-                    {menuItems.map(item => (
-                        <div 
-                            key={item.id} 
-                            onClick={() => addToCart(item)} 
-                            className={`${s.productCard} ${item.stock <= 0 ? 'opacity-25 grayscale cursor-not-allowed' : ''}`}
-                        >
-                            <div className="flex justify-between items-center mb-1">
-                                <div className="flex items-center gap-2">
-                                    <Package size={14} className="text-zinc-500" />
-                                    <span className="text-[10px] font-bold text-zinc-500 uppercase">Stock</span>
+                    {menuItems.map(item => {
+                        const stockCount = parseInt(item.stock, 10) || 0;
+                        return (
+                            <div 
+                                key={item.id} 
+                                onClick={() => addToCart(item)} 
+                                className={`${s.productCard} ${stockCount <= 0 ? s.disabledCard : ''}`}
+                                style={{ cursor: stockCount > 0 ? 'pointer' : 'not-allowed' }}
+                            >
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="flex items-center gap-2">
+                                        <Package size={14} className="text-zinc-500" />
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase">Stock</span>
+                                    </div>
+                                    <span className="text-[10px] font-black text-white">{stockCount}</span>
                                 </div>
-                                <span className="text-[10px] font-black text-white">{item.stock}</span>
+                                <h3 className="font-bold text-zinc-200 text-sm uppercase tracking-tight">{item.name}</h3>
+                                <p className={s.priceText}>₱{parseFloat(item.price).toFixed(2)}</p>
                             </div>
-                            <h3 className="font-bold text-zinc-200 text-sm uppercase tracking-tight">{item.name}</h3>
-                            <p className={s.priceText}>₱{item.price}</p>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* SIDEBAR */}
             <aside className={s.manifestSidebar}>
                 <div className="flex items-center gap-3 pb-5 border-b border-zinc-900">
                     <ShoppingCart size={20} className="text-[#FF2D20]" />
@@ -122,7 +135,7 @@ const POSInterface = () => {
                         <div key={item.id} className={s.manifestItem}>
                             <div className="flex-1">
                                 <p className="text-xs font-bold text-white uppercase leading-tight mb-1">{item.name}</p>
-                                <p className="text-[10px] text-zinc-500 font-mono italic">{item.qty} units x ₱{item.price}</p>
+                                <p className="text-[10px] text-zinc-500 font-mono italic">{item.qty} units x ₱{parseFloat(item.price).toFixed(2)}</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-black text-[#FF2D20]">₱{(item.price * item.qty).toFixed(2)}</span>
@@ -140,7 +153,6 @@ const POSInterface = () => {
                     )}
                 </div>
 
-                {/* FOOTER / TOTAL */}
                 <div className={s.summarySection}>
                     <div className="flex justify-between items-end">
                         <div className="flex flex-col gap-1">

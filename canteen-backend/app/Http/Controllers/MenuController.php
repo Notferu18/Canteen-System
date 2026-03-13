@@ -7,37 +7,52 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    public function index()
-    {
-        $menuItems = MenuItem::all();
-        
-        return response()->json($menuItems);
-    }
+public function index()
+{
+    
+    $items = MenuItem::all()->map(function($item) {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'price' => $item->price,
+            'stock' => $item->current_stock, 
+            'category_id' => $item->category_id,
+        ];
+    });
 
-    public function store(Request $request)
+    return response()->json($items, 200);
+}
+
+public function store(Request $request)
 {
     $validated = $request->validate([
         'name' => 'required|string',
         'price' => 'required|numeric',
-        'stock' => 'required|integer',
+        'stock' => 'required|integer', 
         'category_id' => 'required|exists:categories,id',
     ]);
 
-    $item = MenuItem::create($validated);
+    
+    $item = MenuItem::create([
+        'name' => $validated['name'],
+        'price' => $validated['price'],
+        'current_stock' => $validated['stock'], 
+        'category_id' => $validated['category_id'],
+    ]);
 
     return response()->json($item, 201);
 }
-    public function update(Request $request, $id)
-    {
-        $item = MenuItem::findOrFail($id);
-        $item->update($request->all());
-        return response()->json($item);
-    }
 
-    public function destroy($id)
+public function restock(Request $request, $id)
 {
+    $request->validate(['amount' => 'required|integer|min:1']);
+    
     $item = MenuItem::findOrFail($id);
-    $item->delete();
-    return response()->json(['message' => 'Item deleted successfully']);
+    $item->increment('stock', $request->amount);
+
+    return response()->json([
+        'message' => "Restocked {$item->name}!",
+        'new_stock' => $item->stock
+    ]);
 }
 }
