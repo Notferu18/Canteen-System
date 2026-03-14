@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, ClipboardList,
@@ -6,10 +6,9 @@ import {
     ChevronLeft, ChevronRight, Users, BookOpen, X
 } from 'lucide-react';
 
-const Sidebar = ({ mobileOpen, onMobileClose }) => {
+const Sidebar = ({ mobileOpen, onMobileClose, collapsed, onCollapsedChange }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [collapsed, setCollapsed] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user')) || { name: 'USER', role: 'CUSTOMER' };
 
@@ -24,15 +23,15 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     };
 
     const allMenuItems = [
-        { name: 'Dashboard',      path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
-        { name: 'Place Order',    path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Menu View',      path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Order Queue',    path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Inventory',      path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Audit Trail',    path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
-        { name: 'User Management',path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
-        { name: 'Menu',           path: '/customer/menu',    icon: <BookOpen size={18} />,        roles: ['CUSTOMER'] },
-        { name: 'Order History',  path: '/customer/history', icon: <Clock size={18} />,           roles: ['CUSTOMER'] },
+        { name: 'Dashboard',       path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
+        { name: 'Place Order',     path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Menu View',       path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Order Queue',     path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Inventory',       path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Audit Trail',     path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
+        { name: 'User Management', path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
+        { name: 'Menu',            path: '/customer/menu',    icon: <BookOpen size={18} />,        roles: ['CUSTOMER'] },
+        { name: 'Order History',   path: '/customer/history', icon: <Clock size={18} />,           roles: ['CUSTOMER'] },
     ];
 
     const menuItems = allMenuItems.filter(item =>
@@ -69,14 +68,13 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
                         </button>
                     )}
                     <button
-                        onClick={() => setCollapsed(!collapsed)}
+                        onClick={() => onCollapsedChange && onCollapsedChange(!collapsed)}
                         className="hidden md:flex p-1.5 rounded-sm text-zinc-600 hover:text-white hover:bg-zinc-900 transition-all"
                     >
                         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                     </button>
                 </div>
             </div>
-
             {!collapsed && (
                 <div className="px-4 py-4 border-b border-zinc-900 bg-zinc-900/20">
                     <div className="flex items-center gap-3">
@@ -100,7 +98,6 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
                     </div>
                 </div>
             )}
-
             <nav className="flex-1 py-3 overflow-y-auto">
                 {!collapsed && (
                     <p className="text-[9px] text-zinc-700 uppercase tracking-[0.25em] font-bold px-5 mb-2">Navigation</p>
@@ -153,7 +150,6 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
             <div className="hidden md:flex fixed left-0 top-0 z-50 h-screen">
                 {sidebarContent}
             </div>
-
             {mobileOpen && (
                 <div className="md:hidden fixed inset-0 z-50 flex">
                     <div className="flex h-screen">

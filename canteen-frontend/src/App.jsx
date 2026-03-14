@@ -23,6 +23,7 @@ const AppLayout = ({ children }) => {
     const location = useLocation();
     const { user, loading } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     const isLoginPage = location.pathname === '/login';
     const isRegisterPage = location.pathname === '/register';
@@ -39,16 +40,20 @@ const AppLayout = ({ children }) => {
         );
     }
 
+    const sidebarWidth = collapsed ? 'md:ml-16' : 'md:ml-64';
+
     return (
         <div className="flex min-h-screen bg-black text-white">
             {!isAuthPage && user && (
                 <Sidebar
                     mobileOpen={mobileOpen}
                     onMobileClose={() => setMobileOpen(false)}
+                    collapsed={collapsed}
+                    onCollapsedChange={setCollapsed}
                 />
             )}
 
-            <div className={`flex-1 min-w-0 h-screen overflow-y-auto ${!isAuthPage && user ? 'md:ml-64' : ''}`}>
+            <div className={`flex-1 min-w-0 h-screen overflow-y-auto transition-all duration-300 ${!isAuthPage && user ? sidebarWidth : ''}`}>
                 {!isAuthPage && user && (
                     <div className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-900 sticky top-0 z-40">
                         <button
@@ -69,7 +74,6 @@ const AppLayout = ({ children }) => {
     );
 };
 
-// this component handles routing logic based on user role
 function AppRoutes() {
     const { user } = useAuth();
 
