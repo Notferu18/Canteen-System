@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Clock, CheckCircle, Play, Package, RefreshCw, XCircle } from 'lucide-react';
+import { Clock, CheckCircle, Play, Package, RefreshCw, XCircle, Calendar } from 'lucide-react';
 
 const STATUS_FLOW = {
-    'Pending':   { next: 'Preparing', label: 'Start Preparing', icon: <Play size={14} />,        color: 'bg-zinc-800 hover:bg-red-600' },
-    'Preparing': { next: 'Ready',     label: 'Mark as Ready',   icon: <Package size={14} />,      color: 'bg-blue-900 hover:bg-blue-700' },
-    'Ready':     { next: 'Completed', label: 'Complete Order',  icon: <CheckCircle size={14} />,  color: 'bg-green-800 hover:bg-green-600' },
+    'Pending':   { next: 'Preparing', label: 'Start Preparing', icon: <Play size={14} />,       color: 'bg-zinc-800 hover:bg-red-600' },
+    'Preparing': { next: 'Ready',     label: 'Mark as Ready',   icon: <Package size={14} />,     color: 'bg-blue-900 hover:bg-blue-700' },
+    'Ready':     { next: 'Completed', label: 'Complete Order',  icon: <CheckCircle size={14} />, color: 'bg-green-800 hover:bg-green-600' },
 };
 
 const STATUS_BADGE = {
@@ -16,12 +16,24 @@ const STATUS_BADGE = {
     'Cancelled': 'bg-red-900/20 text-red-400 border-red-800/30',
 };
 
+const DATE_FILTERS = [
+    { label: 'Today',     value: 'today' },
+    { label: 'This Week', value: 'week' },
+    { label: 'All Time',  value: 'all' },
+    { label: 'Custom',    value: 'custom' },
+];
+
 const OrderQueue = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(null);
     const [error, setError] = useState(null);
     const [showCompleted, setShowCompleted] = useState(false);
+
+    const today = new Date().toISOString().split('T')[0];
+    const [dateFilter, setDateFilter] = useState('today');
+    const [customStart, setCustomStart] = useState(today);
+    const [customEnd, setCustomEnd] = useState(today);
 
     useEffect(() => {
         fetchOrders();
@@ -62,8 +74,31 @@ const OrderQueue = () => {
         }
     };
 
-    const activeOrders = orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
-    const completedOrders = orders.filter(o => o.status === 'Completed' || o.status === 'Cancelled');
+    const filterByDate = (ordersList) => {
+        const now = new Date();
+        return ordersList.filter(order => {
+            const orderDate = new Date(order.created_at);
+            if (dateFilter === 'today') {
+                return orderDate.toDateString() === now.toDateString();
+            }
+            if (dateFilter === 'week') {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                return orderDate >= weekAgo;
+            }
+            if (dateFilter === 'custom') {
+                const start = new Date(customStart);
+                const end = new Date(customEnd);
+                end.setHours(23, 59, 59);
+                return orderDate >= start && orderDate <= end;
+            }
+            return true; 
+        });
+    };
+
+    const filteredOrders = filterByDate(orders);
+    const activeOrders = filteredOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
+    const completedOrders = filteredOrders.filter(o => o.status === 'Completed' || o.status === 'Cancelled');
     const displayOrders = showCompleted ? completedOrders : activeOrders;
 
     if (loading) return (
@@ -77,7 +112,7 @@ const OrderQueue = () => {
 
     return (
         <div className="min-h-screen bg-black text-white p-6">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-8">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-widest text-white flex items-center gap-3">
                         <Clock size={24} className="text-red-600" />
@@ -107,9 +142,48 @@ const OrderQueue = () => {
                 </div>
             </div>
 
-            <div className="flex gap-3 mb-6">
+            <div className="bg-zinc-950 border border-zinc-900 rounded-sm p-4 mb-6 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-zinc-600" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Period</span>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                    {DATE_FILTERS.map(f => (
+                        <button
+                            key={f.value}
+                            onClick={() => setDateFilter(f.value)}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-sm border transition ${
+                                dateFilter === f.value
+                                    ? 'bg-red-600 border-red-600 text-white'
+                                    : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                            }`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
+                {dateFilter === 'custom' && (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="date"
+                            value={customStart}
+                            onChange={e => setCustomStart(e.target.value)}
+                            className="bg-black border border-zinc-800 text-white text-xs px-3 py-1.5 rounded-sm outline-none focus:border-red-600 transition-colors"
+                        />
+                        <span className="text-zinc-600 text-xs">to</span>
+                        <input
+                            type="date"
+                            value={customEnd}
+                            onChange={e => setCustomEnd(e.target.value)}
+                            className="bg-black border border-zinc-800 text-white text-xs px-3 py-1.5 rounded-sm outline-none focus:border-red-600 transition-colors"
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="flex gap-3 mb-6 flex-wrap">
                 {Object.entries(STATUS_BADGE).slice(0, 3).map(([status, style]) => {
-                    const count = orders.filter(o => o.status === status).length;
+                    const count = filteredOrders.filter(o => o.status === status).length;
                     return (
                         <div key={status} className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border text-[10px] font-bold uppercase tracking-widest ${style}`}>
                             {status} <span className="font-black">{count}</span>
@@ -128,7 +202,7 @@ const OrderQueue = () => {
                 <div className="text-center py-20">
                     <Clock size={40} className="text-zinc-800 mx-auto mb-4" strokeWidth={1} />
                     <p className="text-zinc-600 text-xs uppercase tracking-[0.3em]">
-                        {showCompleted ? 'No completed orders yet' : 'No active orders in queue'}
+                        {showCompleted ? 'No completed orders' : 'No active orders in queue'}
                     </p>
                 </div>
             ) : (
@@ -136,7 +210,12 @@ const OrderQueue = () => {
                     {displayOrders.map((order) => (
                         <div key={order.id} className="bg-zinc-950 border border-zinc-900 rounded-sm overflow-hidden flex flex-col">
                             <div className="px-4 py-3 bg-zinc-900 flex justify-between items-center border-b border-zinc-800">
-                                <span className="font-mono text-red-500 font-black text-sm">#{order.order_number}</span>
+                                <div>
+                                    <span className="font-mono text-red-500 font-black text-sm">#{order.order_number}</span>
+                                    <p className="text-[9px] text-zinc-600 font-mono mt-0.5">
+                                        {new Date(order.created_at).toLocaleString()}
+                                    </p>
+                                </div>
                                 <span className={`text-[9px] px-2 py-1 rounded-sm font-black uppercase border ${STATUS_BADGE[order.status] || STATUS_BADGE['Pending']}`}>
                                     {order.status}
                                 </span>

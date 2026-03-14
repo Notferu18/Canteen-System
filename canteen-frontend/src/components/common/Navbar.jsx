@@ -9,8 +9,8 @@ const routeTitles = {
     '/orders':           { title: 'Order Queue',       sub: 'Live Order Management' },
     '/inventory':        { title: 'Inventory',         sub: 'Stock Monitoring' },
     '/inventory-master': { title: 'Inventory Master',  sub: 'Stock Control' },
-    '/inventory-logs':   { title: 'Audit Trail',       sub: 'Change History' },
-    '/pos':              { title: 'POS Terminal',       sub: 'Point of Sale' },
+    '/inventory-logs':   { title: 'Reports',       sub: 'Change History' },
+    '/pos':              { title: 'Place Order',       sub: 'Point of Sale' },
 };
 
 const Navbar = ({ sidebarCollapsed = false }) => {
@@ -19,7 +19,7 @@ const Navbar = ({ sidebarCollapsed = false }) => {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const current = routeTitles[location.pathname] || { title: 'Canteen INV', sub: '' };
+    const current = routeTitles[location.pathname] || { title: 'BYTES', sub: '' };
 
     return (
         <header

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, ClipboardList,
     LogOut, History, UserCircle, Clock, ShoppingCart,
-    ChevronLeft, ChevronRight, Users
+    ChevronLeft, ChevronRight, Users, BookOpen
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -11,7 +11,7 @@ const Sidebar = () => {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
 
-    const user = JSON.parse(localStorage.getItem('user')) || { name: 'OPERATOR', role: 'ADMIN' };
+    const user = JSON.parse(localStorage.getItem('user')) || { name: 'USER', role: 'CUSTOMER' };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -21,21 +21,24 @@ const Sidebar = () => {
 
     const allMenuItems = [
         { name: 'Dashboard',        path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
-        { name: 'POS Terminal',     path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Place Order',     path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
         { name: 'Menu View',        path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
         { name: 'Order Queue',      path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
         { name: 'Inventory',        path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
         { name: 'Reports',      path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
         { name: 'User Management',  path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
+
+        { name: 'Menu View',      path: '/customer/menu',    icon: <BookOpen size={18} />,        roles: ['CUSTOMER'] },
+        { name: 'Order History',        path: '/customer/history', icon: <Clock size={18} />,           roles: ['CUSTOMER'] },
     ];
 
     const menuItems = allMenuItems.filter(item =>
         item.roles.includes(user.role?.toUpperCase())
     );
 
-    const roleColor = {
-        ADMIN: 'text-red-500 bg-red-600/10',
-        CASHIER: 'text-blue-400 bg-blue-900/20',
+    const roleStyle = {
+        ADMIN:    'text-red-500 bg-red-600/10',
+        CASHIER:  'text-blue-400 bg-blue-900/20',
         CUSTOMER: 'text-green-400 bg-green-900/20',
     };
 
@@ -46,7 +49,7 @@ const Sidebar = () => {
                 {!collapsed && (
                     <div>
                         <h2 className="text-red-600 font-black text-base tracking-tighter uppercase italic leading-none">
-                            Canteen<span className="text-white"> INV </span>
+                            B Y T E S<span className="text-white"></span>
                         </h2>
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -70,7 +73,7 @@ const Sidebar = () => {
                         </div>
                         <div className="overflow-hidden min-w-0">
                             <p className="text-white text-sm font-black uppercase truncate leading-tight">{user.name}</p>
-                            <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${roleColor[user.role?.toUpperCase()] || 'text-zinc-500 bg-zinc-800'}`}>
+                            <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-sm ${roleStyle[user.role?.toUpperCase()] || 'text-zinc-500 bg-zinc-800'}`}>
                                 {user.role}
                             </span>
                         </div>

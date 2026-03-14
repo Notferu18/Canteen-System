@@ -106,9 +106,9 @@ const POSInterface = () => {
                             <LayoutGrid className="text-[#FF2D20]" size={24} />
                             <div>
                                 <h1 className="text-xl font-black text-white uppercase tracking-tighter leading-none">
-                                    CANTEEN <span className="text-[#FF2D20]">POS</span>
+                                    B Y T E S <span className="text-[#FF2D20]"></span>
                                 </h1>
-                                <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1">Terminal 01</p>
+                                <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1">Product Ordering</p>
                             </div>
                         </div>
                         {fetching && <Loader2 className="animate-spin text-[#FF2D20]" size={20} />}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { DollarSign, ShoppingCart, AlertTriangle, TrendingUp } from 'lucide-react';
+import { DollarSign, ShoppingCart, AlertTriangle, TrendingUp, Download, RefreshCw } from 'lucide-react';
 import SalesChart from './SalesChart';
 import CategoryPieChart from './CategoryPieChart';
 import OrderTrendChart from './OrderTrendChart';
@@ -10,23 +10,71 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const [startDate, setStartDate] = useState(thirtyDaysAgo);
+    const [endDate, setEndDate] = useState(today);
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await axios.get('http://127.0.0.1:8000/api/reports/dashboard', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setData(res.data);
-            } catch (err) {
-                setError('Failed to load dashboard data.');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('http://127.0.0.1:8000/api/reports/dashboard', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { start: startDate, end: endDate }
+            });
+            setData(res.data);
+        } catch (err) {
+            setError('Failed to load dashboard data.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const exportToCSV = () => {
+        if (!data) return;
+
+        const rows = [
+            ['CANTEEN MANAGEMENT SYSTEM - SALES REPORT'],
+            [`Date Range: ${startDate} to ${endDate}`],
+            [''],
+            ['SUMMARY'],
+            ['Total Revenue', `₱${data.totalRevenue}`],
+            ['Total Orders', data.totalOrders],
+            ['Average Order Value', `₱${data.totalOrders ? (data.totalRevenue / data.totalOrders).toFixed(2) : '0.00'}`],
+            ['Low Stock Items', data.lowStockCount],
+            [''],
+            ['DAILY SALES'],
+            ['Day', 'Revenue'],
+            ...(data.salesData || []).map(d => [d.day, `₱${d.amount}`]),
+            [''],
+            ['BEST SELLERS'],
+            ['Item', 'Qty Sold', 'Revenue'],
+            ...(data.bestSellers || []).map(i => [i.name, i.total_qty, `₱${i.revenue}`]),
+            [''],
+            ['CATEGORY DISTRIBUTION'],
+            ['Category', 'Count'],
+            ...(data.categoryData || []).map(c => [c.name, c.value]),
+        ];
+
+        const csvContent = rows.map(row =>
+            row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sales-report-${startDate}-to-${endDate}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen bg-black">
@@ -39,7 +87,15 @@ const AdminDashboard = () => {
 
     if (error) return (
         <div className="flex items-center justify-center min-h-screen bg-black">
-            <p className="text-red-500 text-sm">{error}</p>
+            <div className="flex flex-col items-center gap-3">
+                <p className="text-red-500 text-sm">{error}</p>
+                <button
+                    onClick={fetchData}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs uppercase tracking-widest rounded-sm hover:text-white transition"
+                >
+                    <RefreshCw size={12} /> Retry
+                </button>
+            </div>
         </div>
     );
 
@@ -50,7 +106,7 @@ const AdminDashboard = () => {
             icon: <DollarSign size={18} />,
             accent: 'border-red-600',
             iconBg: 'bg-red-600/10 text-red-500',
-            change: '+12.5%',
+            change: 'All time',
             danger: false,
         },
         {
@@ -59,7 +115,7 @@ const AdminDashboard = () => {
             icon: <ShoppingCart size={18} />,
             accent: 'border-zinc-600',
             iconBg: 'bg-zinc-800 text-zinc-400',
-            change: '+8.2%',
+            change: 'All time',
             danger: false,
         },
         {
@@ -68,7 +124,7 @@ const AdminDashboard = () => {
             icon: <TrendingUp size={18} />,
             accent: 'border-blue-700',
             iconBg: 'bg-blue-900/20 text-blue-400',
-            change: '+3.1%',
+            change: 'Per transaction',
             danger: false,
         },
         {
@@ -83,7 +139,7 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-black text-white p-8">
+        <div className="min-h-screen bg-black text-white">
             <div className="border-b border-zinc-900 px-8 py-4 flex items-center justify-between sticky top-0 bg-black/95 backdrop-blur-sm z-10">
                 <div>
                     <h1 className="text-lg font-black uppercase tracking-[0.25em] text-white">
@@ -102,6 +158,43 @@ const AdminDashboard = () => {
             </div>
 
             <div className="p-8 space-y-8">
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-zinc-950 border border-zinc-900 rounded-sm p-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date Range</p>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                                className="bg-black border border-zinc-800 text-white text-xs px-3 py-2 rounded-sm outline-none focus:border-red-600 transition-colors"
+                            />
+                            <span className="text-zinc-600 text-xs">to</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={e => setEndDate(e.target.value)}
+                                className="bg-black border border-zinc-800 text-white text-xs px-3 py-2 rounded-sm outline-none focus:border-red-600 transition-colors"
+                            />
+                        </div>
+                        <button
+                            onClick={fetchData}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-widest rounded-sm transition"
+                        >
+                            <RefreshCw size={12} />
+                            Apply
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={exportToCSV}
+                        className="flex items-center gap-2 px-4 py-2 border border-zinc-700 hover:border-zinc-500 text-zinc-400 hover:text-white text-xs font-black uppercase tracking-widest rounded-sm transition"
+                    >
+                        <Download size={12} />
+                        Export CSV
+                    </button>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     {summaryCards.map((card, i) => (
                         <div
