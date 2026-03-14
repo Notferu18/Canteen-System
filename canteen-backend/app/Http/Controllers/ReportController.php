@@ -11,19 +11,30 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function getDashboardStats()
+    public function getDashboardStats(Request $request)
     {
-        $totalRevenue  = Order::where('status', 'Completed')->sum('total_amount');
-        $totalOrders   = Order::count();
-        $lowStockCount = MenuItem::where('stock', '<=', 5)->count();
+        $start = $request->query('start')
+            ? Carbon::parse($request->query('start'))->startOfDay()
+            : Carbon::now()->subDays(30)->startOfDay();
+
+        $end = $request->query('end')
+            ? Carbon::parse($request->query('end'))->endOfDay()
+            : Carbon::now()->endOfDay();
+
+        $totalRevenue  = Order::where('status', 'Completed')
+            ->whereBetween('created_at', [$start, $end])
+            ->sum('total_amount');
+
+        $totalOrders   = Order::whereBetween('created_at', [$start, $end])->count();
+        $lowStockCount = MenuItem::where('stock', '<=', 20)->count();
 
         $salesData = Order::where('status', 'Completed')
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->whereBetween('created_at', [$start, $end])
             ->get()
             ->groupBy(fn($order) => Carbon::parse($order->created_at)->format('D'))
             ->map(fn($group, $day) => [
                 'day'    => $day,
-                'amount' => $group->sum('total_amount'),
+                'amount' => round($group->sum('total_amount'), 2),
             ])
             ->values();
 
@@ -34,7 +45,7 @@ class ReportController extends Controller
                 'value' => $cat->menu_items_count,
             ]);
 
-        $orderTrends = Order::where('created_at', '>=', Carbon::now()->subDays(30))
+        $orderTrends = Order::whereBetween('created_at', [$start, $end])
             ->get()
             ->groupBy(fn($order) => Carbon::parse($order->created_at)->format('M d'))
             ->map(fn($group, $day) => [
@@ -45,6 +56,8 @@ class ReportController extends Controller
 
         $bestSellers = DB::table('order_items')
             ->join('menu_items', 'order_items.menu_item_id', '=', 'menu_items.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereBetween('orders.created_at', [$start, $end])
             ->select(
                 'menu_items.name',
                 DB::raw('SUM(order_items.quantity) as total_qty'),
@@ -63,14 +76,22 @@ class ReportController extends Controller
             'categoryData'  => $categoryData,
             'orderTrends'   => $orderTrends,
             'bestSellers'   => $bestSellers,
+            'dateRange'     => [
+                'start' => $start->toDateString(),
+                'end'   => $end->toDateString(),
+            ],
         ]);
     }
 
     public function salesSummary(Request $request)
     {
         $period = $request->query('period', 'daily');
-        $start  = $request->query('start', Carbon::now()->subDays(30));
-        $end    = $request->query('end', Carbon::now());
+        $start  = $request->query('start')
+            ? Carbon::parse($request->query('start'))->startOfDay()
+            : Carbon::now()->subDays(30)->startOfDay();
+        $end    = $request->query('end')
+            ? Carbon::parse($request->query('end'))->endOfDay()
+            : Carbon::now()->endOfDay();
 
         $orders = Order::where('status', 'Completed')
             ->whereBetween('created_at', [$start, $end])
@@ -92,10 +113,10 @@ class ReportController extends Controller
             ->values();
 
         return response()->json([
-            'period'       => $period,
-            'total_revenue'=> round($orders->sum('total_amount'), 2),
-            'total_orders' => $orders->count(),
-            'summary'      => $summary,
+            'period'        => $period,
+            'total_revenue' => round($orders->sum('total_amount'), 2),
+            'total_orders'  => $orders->count(),
+            'summary'       => $summary,
         ]);
     }
 
@@ -130,10 +151,10 @@ class ReportController extends Controller
             ]);
 
         return response()->json([
-            'items'          => $items,
-            'low_stock'      => $items->where('status', 'Low')->count(),
-            'warning_stock'  => $items->where('status', 'Warning')->count(),
-            'stable_stock'   => $items->where('status', 'Stable')->count(),
+            'items'         => $items,
+            'low_stock'     => $items->where('status', 'Low')->count(),
+            'warning_stock' => $items->where('status', 'Warning')->count(),
+            'stable_stock'  => $items->where('status', 'Stable')->count(),
         ]);
     }
 }

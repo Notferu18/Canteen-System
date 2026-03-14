@@ -17,9 +17,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/menu-items', [MenuController::class, 'index']);
 Route::get('/menu-items/{id}', [MenuController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
-Route::post('/orders', [OrderController::class, 'store']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/orders', [OrderController::class, 'store']);
 
     Route::get('/users', [UserController::class, 'index']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     Route::middleware('role:admin')->group(function () {
+        Route::put('/users/{id}', [UserController::class, 'update']);
 
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{id}', [CategoryController::class, 'update']);

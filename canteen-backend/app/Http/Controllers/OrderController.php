@@ -10,9 +10,21 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['items'])->latest()->get();
+        $user = $request->user();
+
+        if ($user->role === 'customer') {
+            $orders = Order::with(['items'])
+                ->where('user_id', $user->id)
+                ->latest()
+                ->get();
+        } else {
+            $orders = Order::with(['items'])
+                ->latest()
+                ->get();
+        }
+
         return response()->json($orders, 200);
     }
 
@@ -41,7 +53,7 @@ class OrderController extends Controller
                     'order_number' => $orderNumber,
                     'total_amount' => $validated['total_amount'],
                     'status'       => 'Pending',
-                    'user_id'      => auth()->id() ?? 1,
+                    'user_id'      => auth()->id(),
                 ]);
 
                 foreach ($validated['items'] as $item) {
