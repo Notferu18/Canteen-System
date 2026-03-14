@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\MenuItem;
+use App\Models\InventoryLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -72,6 +73,13 @@ class OrderController extends Controller
                     $order->items()->attach($menuItem->id, [
                         'quantity' => $item['quantity'],
                         'price'    => $item['price'],
+                    ]);
+
+                    InventoryLog::create([
+                        'menu_item_id'  => $menuItem->id,
+                        'change_amount' => -$item['quantity'],
+                        'reason'        => 'Order #' . $orderNumber,
+                        'user_id'       => auth()->id(),
                     ]);
                 }
 

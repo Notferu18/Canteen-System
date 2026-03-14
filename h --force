@@ -1,0 +1,14 @@
+[33mcommit 4c46d355cac4066f4ac720073494e261ab49d45d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: irlkyu <qrxzlipra@gmail.com>
+Date:   Sat Mar 14 19:04:47 2026 +0800
+
+    feat: Update Navbar and Sidebar titles, add customer components, and enhance order management features
+    
+    - Changed Navbar titles for inventory logs and POS terminal to Reports and Place Order respectively.
+    - Updated default user role in Sidebar to CUSTOMER and added new menu items for customer view.
+    - Introduced CustomerHistory component to display past orders for customers.
+    - Added CustomerMenu component for browsing menu items and adding them to the cart.
+    - Created CustomerOrder component for reviewing and placing orders.
+    - Enhanced AdminDashboard with date range filtering and CSV export functionality.
+    - Improved OrderQueue with date filtering options and better order display.
+    - Updated POSInterface branding and terminal description.

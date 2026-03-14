@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Sidebar from './components/common/Sidebar';
+import { Menu } from 'lucide-react';
 
 import MenuList from './components/menu/MenuList';
 import POSInterface from './components/orders/POSInterface';
@@ -21,6 +22,7 @@ import CustomerHistory from './components/customer/CustomerHistory';
 const AppLayout = ({ children }) => {
     const location = useLocation();
     const { user, loading } = useAuth();
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     const isLoginPage = location.pathname === '/login';
     const isRegisterPage = location.pathname === '/register';
@@ -39,14 +41,35 @@ const AppLayout = ({ children }) => {
 
     return (
         <div className="flex min-h-screen bg-black text-white">
-            {!isAuthPage && user && <Sidebar />}
-            <div className={`flex-1 min-w-0 h-screen overflow-y-auto ${!isAuthPage && user ? 'ml-64' : ''}`}>
+            {!isAuthPage && user && (
+                <Sidebar
+                    mobileOpen={mobileOpen}
+                    onMobileClose={() => setMobileOpen(false)}
+                />
+            )}
+
+            <div className={`flex-1 min-w-0 h-screen overflow-y-auto ${!isAuthPage && user ? 'md:ml-64' : ''}`}>
+                {!isAuthPage && user && (
+                    <div className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-900 sticky top-0 z-40">
+                        <button
+                            onClick={() => setMobileOpen(true)}
+                            className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-900 rounded-sm transition"
+                        >
+                            <Menu size={20} />
+                        </button>
+                        <h2 className="text-red-600 font-black text-sm tracking-tighter uppercase italic">
+                            B Y T E S
+                        </h2>
+                        <div className="w-8" />
+                    </div>
+                )}
                 {children}
             </div>
         </div>
     );
 };
 
+// this component handles routing logic based on user role
 function AppRoutes() {
     const { user } = useAuth();
 
@@ -82,7 +105,6 @@ function AppRoutes() {
                         {isAdmin() ? <UserManagement /> : <Navigate to={defaultRoute()} />}
                     </ProtectedRoute>
                 } />
-
                 <Route path="/menu" element={
                     <ProtectedRoute>
                         {!isCustomer() ? <MenuList /> : <Navigate to="/customer/menu" />}

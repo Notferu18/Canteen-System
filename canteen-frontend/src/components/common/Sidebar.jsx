@@ -3,10 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, UtensilsCrossed, ClipboardList,
     LogOut, History, UserCircle, Clock, ShoppingCart,
-    ChevronLeft, ChevronRight, Users, BookOpen
+    ChevronLeft, ChevronRight, Users, BookOpen, X
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, onMobileClose }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
@@ -19,17 +19,20 @@ const Sidebar = () => {
         navigate('/login');
     };
 
-    const allMenuItems = [
-        { name: 'Dashboard',        path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
-        { name: 'Place Order',     path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Menu View',        path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Order Queue',      path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Inventory',        path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
-        { name: 'Reports',      path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
-        { name: 'User Management',  path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
+    const handleNavClick = () => {
+        if (onMobileClose) onMobileClose();
+    };
 
-        { name: 'Menu View',      path: '/customer/menu',    icon: <BookOpen size={18} />,        roles: ['CUSTOMER'] },
-        { name: 'Order History',        path: '/customer/history', icon: <Clock size={18} />,           roles: ['CUSTOMER'] },
+    const allMenuItems = [
+        { name: 'Dashboard',      path: '/dashboard',        icon: <LayoutDashboard size={18} />, roles: ['ADMIN'] },
+        { name: 'Place Order',    path: '/pos',              icon: <ShoppingCart size={18} />,    roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Menu View',      path: '/menu',             icon: <UtensilsCrossed size={18} />, roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Order Queue',    path: '/orders',           icon: <Clock size={18} />,           roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Inventory',      path: '/inventory',        icon: <ClipboardList size={18} />,   roles: ['ADMIN', 'CASHIER'] },
+        { name: 'Audit Trail',    path: '/inventory-logs',   icon: <History size={18} />,         roles: ['ADMIN'] },
+        { name: 'User Management',path: '/users',            icon: <Users size={18} />,           roles: ['ADMIN'] },
+        { name: 'Menu',           path: '/customer/menu',    icon: <BookOpen size={18} />,        roles: ['CUSTOMER'] },
+        { name: 'Order History',  path: '/customer/history', icon: <Clock size={18} />,           roles: ['CUSTOMER'] },
     ];
 
     const menuItems = allMenuItems.filter(item =>
@@ -42,14 +45,13 @@ const Sidebar = () => {
         CUSTOMER: 'text-green-400 bg-green-900/20',
     };
 
-    return (
-        <div className={`h-screen ${collapsed ? 'w-16' : 'w-64'} bg-zinc-950 border-r border-zinc-900 flex flex-col fixed left-0 top-0 transition-all duration-300 z-50`}>
-
+    const sidebarContent = (
+        <div className={`h-screen ${collapsed ? 'w-16' : 'w-64'} bg-zinc-950 border-r border-zinc-900 flex flex-col transition-all duration-300`}>
             <div className={`flex items-center ${collapsed ? 'justify-center px-0' : 'justify-between px-5'} py-5 border-b border-zinc-900`}>
                 {!collapsed && (
                     <div>
                         <h2 className="text-red-600 font-black text-base tracking-tighter uppercase italic leading-none">
-                            B Y T E S<span className="text-white"></span>
+                            B Y T E S
                         </h2>
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
@@ -57,12 +59,22 @@ const Sidebar = () => {
                         </div>
                     </div>
                 )}
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="p-1.5 rounded-sm text-zinc-600 hover:text-white hover:bg-zinc-900 transition-all"
-                >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                </button>
+                <div className="flex items-center gap-2">
+                    {mobileOpen && (
+                        <button
+                            onClick={onMobileClose}
+                            className="md:hidden p-1.5 rounded-sm text-zinc-600 hover:text-white hover:bg-zinc-900 transition-all"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setCollapsed(!collapsed)}
+                        className="hidden md:flex p-1.5 rounded-sm text-zinc-600 hover:text-white hover:bg-zinc-900 transition-all"
+                    >
+                        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                    </button>
+                </div>
             </div>
 
             {!collapsed && (
@@ -99,6 +111,7 @@ const Sidebar = () => {
                         <Link
                             key={item.path}
                             to={item.path}
+                            onClick={handleNavClick}
                             title={collapsed ? item.name : ''}
                             className={`flex items-center gap-3 ${collapsed ? 'justify-center px-0 mx-2' : 'px-5'} py-3 my-0.5 rounded-sm transition-all duration-200 group
                                 ${isActive
@@ -133,6 +146,26 @@ const Sidebar = () => {
                 </button>
             </div>
         </div>
+    );
+
+    return (
+        <>
+            <div className="hidden md:flex fixed left-0 top-0 z-50 h-screen">
+                {sidebarContent}
+            </div>
+
+            {mobileOpen && (
+                <div className="md:hidden fixed inset-0 z-50 flex">
+                    <div className="flex h-screen">
+                        {sidebarContent}
+                    </div>
+                    <div
+                        className="flex-1 bg-black/60 backdrop-blur-sm"
+                        onClick={onMobileClose}
+                    />
+                </div>
+            )}
+        </>
     );
 };
 

@@ -50,7 +50,7 @@ const InventoryLogs = () => {
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-widest text-white flex items-center gap-3">
                         <History size={24} className="text-red-600" />
-                        Reports<span className="text-red-600"></span>
+                        Audit<span className="text-red-600">Trail</span>
                     </h1>
                     <p className="text-[10px] text-zinc-600 uppercase tracking-widest mt-0.5">
                         Complete stock change history

@@ -51,24 +51,28 @@ const MenuList = () => {
     });
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-        try {
-            if (editingId) {
-                await axios.put(`${API_URL}/${editingId}`, newItem, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } else {
-                await axios.post(API_URL, newItem, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
-            closeModal();
-            fetchMenu();
-        } catch (err) {
-            console.error("Operation failed", err);
-        }
-    };
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    try {
+        const formData = new FormData();
+        formData.append('name', newItem.name);
+        formData.append('price', newItem.price);
+        formData.append('stock', newItem.stock);
+        formData.append('category_id', newItem.category_id);
+        if (newItem.description) formData.append('description', newItem.description);
+        if (newItem.image) formData.append('image', newItem.image);
+        if (editingId) formData.append('_method', 'PUT');
+
+        const url = editingId ? `${API_URL}/${editingId}` : API_URL;
+        await axios.post(url, formData, {
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        });
+        closeModal();
+        fetchMenu();
+    } catch (err) {
+        console.error("Operation failed", err);
+    }
+};
 
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this item?")) {
@@ -155,6 +159,7 @@ const MenuList = () => {
                                 item={item}
                                 onEdit={openEditModal}
                                 onDelete={handleDelete}
+                                onRefresh={fetchMenu} 
                             />
                         ))
                     ) : (

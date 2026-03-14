@@ -20,15 +20,15 @@ const InventoryTable = () => {
     };
 
     const handleRestock = async (id, currentStock) => {
-        const amount = prompt("Enter amount to add:", "10");
+        const amount = prompt("Enter amount to add:", "20");
         if (!amount || isNaN(amount)) return;
 
         const token = localStorage.getItem('token');
         try {
-            await axios.put(`http://127.0.0.1:8000/api/menu-items/${id}`, 
-                { stock: parseInt(currentStock) + parseInt(amount) },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+          await axios.post('http://127.0.0.1:8000/api/inventory/adjust',
+            { menu_item_id: id, change_amount: parseInt(amount), reason: 'Manual restock' },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
             fetchInventory(); 
         } catch (err) {
             alert("Restock failed.");

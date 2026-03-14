@@ -20,6 +20,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/inventory/adjust', [InventoryController::class, 'store']);
     Route::post('/orders', [OrderController::class, 'store']);
 
     Route::get('/users', [UserController::class, 'index']);
@@ -33,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     Route::middleware('role:admin')->group(function () {
+        Route::post('/inventory/bulk-restock', [InventoryController::class, 'bulkRestock']);
+        Route::patch('/menu-items/{id}/toggle-availability', [MenuController::class, 'toggleAvailability']);
         Route::put('/users/{id}', [UserController::class, 'update']);
 
         Route::post('/categories', [CategoryController::class, 'store']);
